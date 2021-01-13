@@ -9,6 +9,7 @@ library(ows4R)
                             version = "1.1.0",
                             request = "GetFeature",
                             typeName = "VRBG:Refprv",
+                            cql_filter="NAAM='West-Vlaanderen'",
                             srsName = "EPSG:31370",
                             outputFormat = "text/xml; subtype=gml/3.1.1")) %>%
     build_url() %>%
