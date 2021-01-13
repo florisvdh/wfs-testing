@@ -4,7 +4,7 @@ library(httr)
 library(purrr)
 library(ows4R)
 "https://geoservices.informatievlaanderen.be/overdrachtdiensten/VRBG/wfs" %>%
-    parse_url %>%
+    parse_url() %>%
     list_merge(query = list(service = "wfs",
                             version = "1.1.0",
                             request = "GetFeature",
