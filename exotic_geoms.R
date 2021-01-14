@@ -13,24 +13,6 @@ getfeature_sf <- function(wfs, typename, cql_filter) {
 }
 
 #########################
-# MULTISURFACE
-# solved using https://github.com/r-spatial/sf/issues/748#issuecomment-389811593
-#########################
-object1 <-
-  getfeature_sf("https://geoservices.informatievlaanderen.be/overdrachtdiensten/VRBG/wfs",
-                "VRBG:Refprv",
-                "NAAM='West-Vlaanderen'")
-st_geometry_type(object1)
-ggplot(object1) + geom_sf()
-st_buffer(object1, 10)
-
-object1 <-
-  st_cast(object1, "GEOMETRYCOLLECTION")
-st_geometry_type(object1)
-st_buffer(object1, 10)
-
-
-#########################
 # COMPOUNDCURVE
 #########################
 object2 <-
@@ -38,13 +20,8 @@ object2 <-
                 "BWK:Hab3260",
                 "OBJ=2071")
 st_geometry_type(object2)
-ggplot(object2) + geom_sf()
-st_buffer(object2, 10)
-object2$SHAPE
-st_cast(object2, "GEOMETRYCOLLECTION")
-st_cast(object2, "GEOMETRY")
-st_cast(object2, "LINESTRING")
-st_collection_extract(object2, "LINESTRING")
+st_cast(object2, "GEOMETRYCOLLECTION") %>%
+  st_collection_extract("LINESTRING")
 
 #########################
 # CURVEPOLYGON
@@ -54,14 +31,10 @@ object3 <-
                 "BWK:Bwkhab",
                 "TAG='000098_v2018'")
 st_geometry_type(object3)
-ggplot(object3) + geom_sf()
-st_buffer(object3, 10)
-object3$SHAPE
-st_cast(object3, "GEOMETRYCOLLECTION")
-st_cast(object3, "GEOMETRY")
-st_cast(object3, "POLYGON")
-st_cast(object3, "LINESTRING")
-st_collection_extract(object3, "LINESTRING")
+st_cast(object3$SHAPE, "GEOMETRYCOLLECTION") %>%
+  st_collection_extract("LINESTRING") %>%
+  st_cast("POLYGON")
+
 
 
 
