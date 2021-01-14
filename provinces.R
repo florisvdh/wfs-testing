@@ -3,6 +3,14 @@ library(dplyr)
 library(httr)
 library(purrr)
 library(ows4R)
+
+"https://geoservices.informatievlaanderen.be/overdrachtdiensten/VRBG/wfs" %>%
+    parse_url() %>%
+    list_merge(query = list(request = "DescribeFeatureType",
+                            typeName = "VRBG:Refprv")) %>%
+    build_url() %>%
+    GET()
+
 "https://geoservices.informatievlaanderen.be/overdrachtdiensten/VRBG/wfs" %>%
     parse_url() %>%
     list_merge(query = list(request = "GetFeature",
