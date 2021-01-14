@@ -2,7 +2,6 @@ library(sf)
 library(dplyr)
 library(httr)
 library(purrr)
-library(ows4R)
 
 "https://geoservices.informatievlaanderen.be/overdrachtdiensten/VRBG/wfs" %>%
     parse_url() %>%
