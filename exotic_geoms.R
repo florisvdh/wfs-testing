@@ -9,19 +9,9 @@ getfeature_sf <- function(wfs, typename, cql_filter) {
                                    typeName = typename,
                                    cql_filter = cql_filter)) %>%
     httr::build_url() %>%
+    paste0("WFS:", .) %>%
     read_sf()
 }
-
-#########################
-# COMPOUNDCURVE
-#########################
-object2 <-
-  getfeature_sf("https://geoservices.informatievlaanderen.be/overdrachtdiensten/BWK/wfs",
-                "BWK:Hab3260",
-                "OBJ=2071")
-st_geometry_type(object2)
-st_cast(object2, "GEOMETRYCOLLECTION") %>%
-  st_collection_extract("LINESTRING")
 
 #########################
 # CURVEPOLYGON
@@ -29,13 +19,24 @@ st_cast(object2, "GEOMETRYCOLLECTION") %>%
 object3 <-
   getfeature_sf("https://geoservices.informatievlaanderen.be/overdrachtdiensten/BWK/wfs",
                 "BWK:Bwkhab",
-                "TAG='000098_v2018'")
+                "TAG='183657_v2020'")
+
+nrow(object3)
 st_geometry_type(object3)
+
+# following gives 3 polygons, not 1:
+###########################
 st_cast(object3$SHAPE, "GEOMETRYCOLLECTION") %>%
   st_collection_extract("LINESTRING") %>%
   st_cast("POLYGON")
 
+# alternative based on https://github.com/rsbivand/rgrass7/issues/30#issuecomment-866756908:
+###########################"
+st_write(object3$SHAPE, file.path(tempdir(), "object3.gpkg"))
 
+gdal_utils("vectortranslate",
+           file.path(tempdir(), "object3.gpkg"),
+           file.path(tempdir(), "object3_1.gpkg"),
+           options=c("-nlt", "CONVERT_TO_LINEAR"))
 
-
-
+read_sf(file.path(tempdir(), "object3_1.gpkg"))
