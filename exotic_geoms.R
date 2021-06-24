@@ -1,17 +1,15 @@
 suppressPackageStartupMessages(library(dplyr))
 library(sf)
 
-multiple_curvepolygons <-
-  read_sf("https://geoservices.informatievlaanderen.be/overdrachtdiensten/BWK/wfs?service=WFS&request=GetFeature&typename=BWK%3ABwkhab&bbox=137000%2C193000%2C138000%2C194000")
+multiple_multisurfaces <-
+  read_sf("https://geoservices.informatievlaanderen.be/overdrachtdiensten/VRBG/wfs?service=wfs&request=GetFeature&typeName=VRBG%3ARefprv")
 
-multiple_curvepolygons %>%  # 152 features
+multiple_multisurfaces %>%  # 5 features
   st_cast("GEOMETRYCOLLECTION") %>%
   mutate(id = seq_along(SHAPE)) %>%
-  st_collection_extract("LINESTRING") %>% # 159 features
-  aggregate(list(.$id), first, do_union = FALSE) %>% # 152 features
+  st_collection_extract("POLYGON") %>% # 28 features
+  aggregate(list(.$id), first, do_union = FALSE) %>% # 5 features
   select(-id, -Group.1) %>%
-  st_cast("POLYGON") %>%
   as_tibble %>%
   st_as_sf
-
 
