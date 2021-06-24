@@ -1,42 +1,28 @@
 suppressPackageStartupMessages(library(dplyr))
 library(sf)
-library(ggplot2)
 
-getfeature_sf <- function(wfs, typename, cql_filter) {
-  httr::parse_url(wfs) %>%
-    purrr::list_merge(query = list(service = "wfs",
-                                   request = "GetFeature",
-                                   typeName = typename,
-                                   cql_filter = cql_filter)) %>%
-    httr::build_url() %>%
-    paste0("WFS:", .) %>%
-    read_sf()
-}
+multiple_curvepolygons <-
+  read_sf("https://geoservices.informatievlaanderen.be/overdrachtdiensten/BWK/wfs?service=WFS&request=GetFeature&typename=BWK%3ABwkhab&bbox=137000%2C193000%2C138000%2C194000")
 
-#########################
-# CURVEPOLYGON
-#########################
-object3 <-
-  getfeature_sf("https://geoservices.informatievlaanderen.be/overdrachtdiensten/BWK/wfs",
-                "BWK:Bwkhab",
-                "TAG='183657_v2020'")
+geometrycollection_sf_with_id <-
+  multiple_curvepolygons %>%  # 152 features
+  st_cast("GEOMETRYCOLLECTION") %>%
+  mutate(id = seq_along(SHAPE)) # 152 features
 
-nrow(object3)
-st_geometry_type(object3)
+### sfc only:
+#######################################
+geometrycollection_sf_with_id %>% # 152 features
+  st_collection_extract("LINESTRING") %>% # 159 features
+  {st_cast(.$SHAPE, "POLYGON", ids = .$id)} # 152 features
 
-# following gives 3 polygons, not 1:
-###########################
-st_cast(object3$SHAPE, "GEOMETRYCOLLECTION") %>%
-  st_collection_extract("LINESTRING") %>%
-  st_cast("POLYGON")
+### combining with attributes (sf):
+#######################################
+geometrycollection_sf_with_id %>% # 152 features
+  {st_sf(st_drop_geometry(.),
+         geometry =
+           st_collection_extract(., "LINESTRING") %>%
+           {st_cast(.$SHAPE, "POLYGON", ids = .$id)})} %>%
+  select(-id) %>%
+  as_tibble %>%
+  st_as_sf  # 152 features
 
-# alternative based on https://github.com/rsbivand/rgrass7/issues/30#issuecomment-866756908:
-###########################"
-st_write(object3$SHAPE, file.path(tempdir(), "object3.gpkg"))
-
-gdal_utils("vectortranslate",
-           file.path(tempdir(), "object3.gpkg"),
-           file.path(tempdir(), "object3_1.gpkg"),
-           options=c("-nlt", "CONVERT_TO_LINEAR"))
-
-read_sf(file.path(tempdir(), "object3_1.gpkg"))
